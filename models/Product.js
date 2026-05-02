@@ -16,6 +16,7 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
+    index: true,
   },
   hindiName: {
     type: String,
@@ -26,6 +27,7 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
+    index: true,
   },
   badge: {
     type: String,
@@ -115,6 +117,8 @@ const productSchema = new mongoose.Schema({
 }, {
   timestamps: true,
 });
+
+productSchema.index({ createdAt: -1 });
 
 const Product = mongoose.model('Product', productSchema);
 export default Product;

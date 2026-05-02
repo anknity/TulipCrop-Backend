@@ -9,6 +9,9 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import jwt from 'jsonwebtoken';
 import Product from './models/Product.js';
 import auth from './middleware/auth.js';
+import compression from 'compression';
+import helmet from 'helmet';
+import apicache from 'apicache';
 
 const app = express();
 const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:3000'].filter(Boolean);
@@ -24,6 +27,10 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.use(compression());
+app.use(helmet());
+
+const cache = apicache.middleware;
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -133,7 +140,7 @@ Your rules:
 });
 
 /* ───────── Public Routes ───────── */
-app.get('/api/products', async (req, res) => {
+app.get('/api/products', cache('5 minutes'), async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
     res.json(products.map(toClientProduct));
@@ -166,7 +173,7 @@ app.get('/api/products/:id/similar', async (req, res) => {
   }
 });
 
-app.get('/api/categories', async (req, res) => {
+app.get('/api/categories', cache('10 minutes'), async (req, res) => {
   try {
     const categories = await Product.distinct('category');
     res.json(categories);
